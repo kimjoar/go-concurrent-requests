@@ -94,6 +94,13 @@ func nsToMs(ns int64) int64 {
     return ns / 1000000
 }
 
+func totalResponseTime(results []Result) (time int64) {
+    for _, val := range results {
+        time += nsToMs(val.ResponseTime.Nanoseconds())
+    }
+    return
+}
+
 func ConcurrentRequestsWithStats(uri string, concurrency int, duration time.Duration) {
     fetching := ConcurrentRequests(uri, concurrency)
 
@@ -102,14 +109,10 @@ func ConcurrentRequestsWithStats(uri string, concurrency int, duration time.Dura
         fetching.Close()
         ms := nsToMs(duration.Nanoseconds())
         reqs := len(fetching.Results())
+        totalResponseTimeInMs := totalResponseTime(fetching.Results())
 
-        var totalResponseTimeInMs int64
-        totalResponseTimeInMs = 0
-        for _, val := range fetching.Results() {
-            totalResponseTimeInMs += nsToMs(val.ResponseTime.Nanoseconds())
-        }
-
-        fmt.Println("Closed!")
+        fmt.Println("-----------")
+        fmt.Println("Done!")
         fmt.Println("- Total Requests: ", reqs)
         fmt.Println("- Elapsed (ms): ", ms)
         fmt.Println("- reqs/s: ", float64(reqs) / duration.Seconds())
