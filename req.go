@@ -91,13 +91,31 @@ func (r *requests) loop() {
     }
 }
 
+func nsToMs(ns int64) int64 {
+    return ns / 1000000
+}
+
 func main() {
-    fetching := ConcurrentRequests("http://localhost:3000", 10)
+    fetching := ConcurrentRequests("http://localhost:3000", 30)
+    duration := 3*time.Second
 
     // Stop fetching after some time
-    time.AfterFunc(3*time.Second, func() {
+    time.AfterFunc(duration, func() {
         fetching.Close()
-        fmt.Println("Closed!", len(fetching.Results()))
+        ms := nsToMs(duration.Nanoseconds())
+        reqs := len(fetching.Results())
+
+        var totalResponseTimeInMs int64
+        totalResponseTimeInMs = 0
+        for _, val := range fetching.Results() {
+            totalResponseTimeInMs += nsToMs(val.ResponseTime.Nanoseconds())
+        }
+
+        fmt.Println("Closed!")
+        fmt.Println("- Total Requests: ", reqs)
+        fmt.Println("- Elapsed (ms): ", ms)
+        fmt.Println("- reqs/s: ", float64(reqs) / duration.Seconds())
+        fmt.Println("- Avg response time (ms): ", totalResponseTimeInMs / int64(reqs))
     })
 
     var input string
