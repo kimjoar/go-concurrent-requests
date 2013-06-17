@@ -1,4 +1,4 @@
-package main
+package concurrentRequests
 
 import (
     "net/http";
@@ -61,7 +61,6 @@ func (r *requests) fetch() Result {
     return Result{r.uri, resp.StatusCode, resp.ContentLength, time.Since(t0)}
 }
 
-
 func (r *requests) loop() {
     c := make(chan bool, r.concurrency)
     res := make(chan Result, r.concurrency)
@@ -95,9 +94,8 @@ func nsToMs(ns int64) int64 {
     return ns / 1000000
 }
 
-func main() {
-    fetching := ConcurrentRequests("http://localhost:3000", 30)
-    duration := 3*time.Second
+func ConcurrentRequestsWithStats(uri string, concurrency int, duration time.Duration) {
+    fetching := ConcurrentRequests(uri, concurrency)
 
     // Stop fetching after some time
     time.AfterFunc(duration, func() {
@@ -117,7 +115,5 @@ func main() {
         fmt.Println("- reqs/s: ", float64(reqs) / duration.Seconds())
         fmt.Println("- Avg response time (ms): ", totalResponseTimeInMs / int64(reqs))
     })
-
-    var input string
-    fmt.Scanln(&input)
 }
+
